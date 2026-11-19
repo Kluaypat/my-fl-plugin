@@ -1,0 +1,27 @@
+name: Build
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"
+
+      - name: Build
+        run: cmake --build build --config Release --target KLUAY_VST3 KLUAY_Standalone --parallel 4
+
+      - name: Upload plugin
+        uses: actions/upload-artifact@v4
+        with:
+          name: KLUAY-${{ runner.os }}
+          path: build/KLUAY_artefacts/Release/VST3
